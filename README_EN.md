@@ -80,9 +80,58 @@ ports:
   - "your_port:5678"
 ```
 
-## Using yt-dlp
+## Using n8n Workflow
 
-In n8n workflows, you can use the Execute Command node to run yt-dlp commands, for example:
+This project includes a default n8n workflow `yt_dlp_video_download_and_summary.json` that provides video downloading and automatic summary generation functionality.
+
+### Importing the Workflow
+
+1. In the n8n interface, click on "Workflows" in the top left corner
+2. Click the "Import" button
+3. Select the `yt_dlp_video_download_and_summary.json` file
+4. Click "Import" to complete the workflow import
+
+### Workflow Features
+
+This workflow provides the following features:
+
+1. **Video Download**: Supports downloading videos from various websites with different quality and format options
+2. **Video Summary**: Optional automatic generation of video content summaries using the OpenAI API (requires an API key)
+
+### Using the API Endpoint
+
+The workflow establishes a Webhook endpoint that can be accessed via HTTP requests:
+
+```
+http://localhost:5678/webhook/download-video
+```
+
+#### Request Parameters
+
+- `url`: The URL of the video to download (required)
+- `quality`: Video quality, options: `highest`, `high`, `medium`, `low` (default is `medium`)
+- `format`: Output format, options: `mp4`, `mp3` (default is `mp4`)
+- `summarize`: Whether to generate a summary, options: `0`, `1` (default is `0`, no summary)
+- `token`: OpenAI API key (required if `summarize=1`)
+- `online`: Whether to use online mode, options: `0`, `1` (default is `0`, online mode automatically deletes files older than 1 hour)
+
+#### Request Examples
+
+Download video only:
+
+```bash
+curl "http://localhost:5678/webhook/download-video?url=https://www.youtube.com/watch?v=example&quality=high&format=mp4"
+```
+
+Download and generate summary:
+
+```bash
+curl "http://localhost:5678/webhook/download-video?url=https://www.youtube.com/watch?v=example&quality=medium&format=mp3&summarize=1&token=your_openai_api_key"
+```
+
+### Manual Use of yt-dlp
+
+Besides using the default workflow, you can also use the Execute Command node in n8n workflows to directly run yt-dlp commands, for example:
 
 ```
 yt-dlp -o "/home/node/downloads/%(title)s.%(ext)s" [URL]

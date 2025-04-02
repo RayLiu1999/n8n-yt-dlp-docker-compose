@@ -80,9 +80,58 @@ ports:
   - "your_port:5678"
 ```
 
-## 使用 yt-dlp
+## 使用 n8n 工作流程
 
-在 n8n 工作流中，可以使用 Execute Command 節點來執行 yt-dlp 命令，例如：
+本專案包含一個預設的 n8n 工作流程 `yt_dlp_video_download_and_summary.json`，提供影片下載和自動生成摘要功能。
+
+### 導入工作流程
+
+1. 在 n8n 介面中，點擊左上角的「工作流程」
+2. 點擊「導入」按鈕
+3. 選擇 `yt_dlp_video_download_and_summary.json` 文件
+4. 點擊「導入」完成工作流程的導入
+
+### 工作流程功能
+
+此工作流程提供以下功能：
+
+1. **影片下載**：支援從多種網站下載影片，可選擇不同的品質和格式
+2. **影片摘要**：可選擇使用 OpenAI API 自動生成影片內容摘要（需要 API 金鑰）
+
+### API 端點使用
+
+工作流程建立了一個 Webhook 端點，可通過 HTTP 請求使用：
+
+```
+http://localhost:5678/webhook/download-video
+```
+
+#### 請求參數
+
+- `url`：要下載的影片 URL（必填）
+- `quality`：影片品質，可選值：`highest`、`high`、`medium`、`low`（預設為 `medium`）
+- `format`：輸出格式，可選值：`mp4`、`mp3`（預設為 `mp4`）
+- `summarize`：是否生成摘要，可選值：`0`、`1`（預設為 `0`，不生成摘要）
+- `token`：OpenAI API 金鑰（如果 `summarize=1`，則必填）
+- `online`：是否為線上模式，可選值：`0`、`1`（預設為 `0`，線上模式會自動刪除 1 小時前的檔案）
+
+#### 請求範例
+
+僅下載影片：
+
+```bash
+curl "http://localhost:5678/webhook/download-video?url=https://www.youtube.com/watch?v=example&quality=high&format=mp4"
+```
+
+下載並生成摘要：
+
+```bash
+curl "http://localhost:5678/webhook/download-video?url=https://www.youtube.com/watch?v=example&quality=medium&format=mp3&summarize=1&token=your_openai_api_key"
+```
+
+### 手動使用 yt-dlp
+
+除了使用預設工作流程，您也可以在 n8n 工作流中使用 Execute Command 節點來直接執行 yt-dlp 命令，例如：
 
 ```
 yt-dlp -o "/home/node/downloads/%(title)s.%(ext)s" [URL]

@@ -1,0 +1,615 @@
+{
+  "name": "yt_dlp_video_download_and_summary",
+  "nodes": [
+    {
+      "parameters": {
+        "command": "=rm {{ $('讀音檔').item.json.directory }}/{{ $('讀音檔').item.json.fileName }}"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        780,
+        240
+      ],
+      "id": "5b0a8bce-3015-4e21-b44f-456d294a4148",
+      "name": "刪除音檔"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "download_path",
+              "value": "/home/node/downloads"
+            },
+            {
+              "name": "online",
+              "value": "0"
+            },
+            {
+              "name": "url",
+              "value": "={{ $json.query.url }}"
+            },
+            {
+              "name": "quality",
+              "value": "={{ $json.query.quality }}"
+            },
+            {
+              "name": "format",
+              "value": "={{ $json.query.format }}"
+            }
+          ],
+          "number": [
+            {
+              "name": "summarize",
+              "value": "={{ $json.query.summarize ?? 0 }}"
+            },
+            {
+              "name": "token",
+              "value": "={{ ($json.query.token) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "取得GET參數",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        0
+      ],
+      "id": "6edcc8e8-4fa8-483b-b58f-223decbad288"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 取得參數\nconst quality = $node['取得GET參數'].json['quality'];\nconst format = $node['取得GET參數'].json['format'];\nconst summarize = $node['取得GET參數'].json['summarize'];\nconst online = $node['取得GET參數'].json['online'];\n\n// 設置 yt-dlp 格式與檔名\nlet yt_dlp_format = '';\nlet mp3_format = ' -x --audio-format mp3';\nlet download_file_name  = '%(title)s';\nif (parseInt(online) === 1) {\n  download_file_name  = new Date().toISOString().replace(/[:.]/g, '');  \n}\n\n// 根據 quality 設置格式\nif (quality === 'highest') {\n  // 最高品質 - 不限制寬高\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]';\n  }\n} else if (quality === 'high') {\n  // 高品質 - 限制最大 1920x1080\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]ext=mp4]';\n  }\n} else if (quality === 'medium') {\n  // 中等品質 - 限制最大 720p\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]';\n  }\n} else if (quality === 'low') {\n  // 低品質 - 限制最大 360p\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]';\n  }\n} else {\n  // 預設為中等品質\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]';\n  }\n}\n\n// 設置 mp3 品質與檔名\nif (format === 'mp3' && parseInt(summarize) === 1) {\n  mp3_format += ' --audio-quality 9';\n  // 依照日期和時間命名\n  download_file_name = new Date().toISOString().replace(/[:.]/g, '') + '_mp3';\n}\n\n// 返回結果\nreturn [{\n  json: {\n    ...$node['取得GET參數'].json,\n    download_file_name,\n    yt_dlp_format,\n    yt_dlp_extra: format === 'mp3' ? mp3_format : ''\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        0
+      ],
+      "id": "47ad6a2b-46ba-479e-b8d1-6999174a2ce7",
+      "name": "判斷下載影片類型"
+    },
+    {
+      "parameters": {
+        "command": "=# 下載影片\nyt-dlp --no-mtime -f \"{{ $json.yt_dlp_format }}\" {{ $json.yt_dlp_extra }} -o \"{{ $node['取得GET參數'].json['download_path'] }}/{{ $json.download_file_name }}.%(ext)s\" \"{{ $node['取得GET參數'].json['url'] }}\""
+      },
+      "name": "下載影片or音檔",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        780,
+        0
+      ],
+      "id": "aa1df08f-11ca-4e33-b9f1-3469a5c08bf4",
+      "notes": "-f \"bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4]\""
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2ebe59c5-0be9-4cee-a7a2-43f4c3b0130d",
+              "leftValue": "={{ parseInt($('取得GET參數').item.json.summarize) }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "8a0e5434-30f2-4b49-96b8-ffb0b43fc435",
+              "leftValue": "={{ $('取得GET參數').item.json.token }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1000,
+        0
+      ],
+      "id": "9ba5b7c6-eec1-403d-8ec0-9bb6fbf830bf",
+      "name": "參數是否有帶上總結"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $('取得GET參數').item.json.download_path }}/{{ $('判斷下載影片類型').item.json.download_file_name }}.mp3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        260
+      ],
+      "id": "9200f0a6-3b80-4021-8b69-6a2b39bfd2c7",
+      "name": "讀音檔"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('取得GET參數').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "gpt-4o-mini-transcribe"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -80,
+        260
+      ],
+      "id": "e5cfb9dd-d3a7-46a7-be1b-163b86154a45",
+      "name": "gpt-4o-mini-transcribe",
+      "alwaysOutputData": true,
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1da500f5-17f7-49b3-a0fe-f6f87ffa3d55",
+              "leftValue": "={{ $('gpt-4o-mini-transcribe').item.json.text }}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        120,
+        260
+      ],
+      "id": "35b06718-52a2-4a14-8ee1-c14f04f15335",
+      "name": "如果沒有失敗(太長會失敗)"
+    },
+    {
+      "parameters": {
+        "fileSelector": "={{ $('取得GET參數').item.json.download_path }}/{{ $('判斷下載影片類型').item.json.download_file_name }}.mp3",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        340,
+        340
+      ],
+      "id": "a902e5ec-6f8c-4dce-81c5-25469a2b6dca",
+      "name": "重讀音檔"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/audio/transcriptions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('取得GET參數').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-1"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        560,
+        340
+      ],
+      "id": "9f9ae06a-3b12-410c-8420-2c6a2d846e68",
+      "name": "whisper-1",
+      "alwaysOutputData": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('取得GET參數').item.json.token }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"model\": \"gpt-4o-mini-2024-07-18\",\n    \"messages\": [\n      {\n        \"role\": \"developer\",\n        \"content\": \"你是逐字稿的總結大師\"\n      },\n      {\n        \"role\": \"user\",\n        \"content\": \"幫我找出重點並詳細總結以下影片的逐字稿，並且統一以繁體中文回答。{{ $('gpt-4o-mini-transcribe').item.json.text ?? $('whisper-1').item.json.text }}\"\n      }\n    ]\n  }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1000,
+        240
+      ],
+      "id": "87a262f7-63e2-4f23-8fc6-4738e5f53704",
+      "name": "4o-mini總結",
+      "alwaysOutputData": true,
+      "retryOnFail": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const quality = $node['取得GET參數'].json['quality'];\nconst format = $node['取得GET參數'].json['format'];\nconst summarize = $node['取得GET參數'].json['summarize'];\nconst token = $node['取得GET參數'].json['token'];\n\nreturn [{\n  json: {\n    status: \"false\",\n    \"message\": \"token is Required\"\n  },\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        -160
+      ],
+      "id": "45d595ef-58d3-42a5-b264-7a0b95df95a0",
+      "name": "返回錯誤"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e2efbdb8-51c5-4db2-b09e-92cd5077dd28",
+              "leftValue": "={{ parseInt($json.query.summarize) }}",
+              "rightValue": 1,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "10d98af0-ac72-449c-bd96-e399b7e61155",
+              "leftValue": "={{ $json.query.token }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        340,
+        0
+      ],
+      "id": "47d926f0-5b8d-48d4-bc44-e33a17be8c93",
+      "name": "如果總結且無帶token"
+    },
+    {
+      "parameters": {
+        "path": "download-video",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "下載＆總結影片",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        0
+      ],
+      "id": "6e8e18e7-39d2-4f1b-ac97-11b0166937ad",
+      "webhookId": "dc15093e-6778-4f3a-bc73-75a0c0691596",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "1iVAJezcKNcqxhVK",
+          "name": "Bearer token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 根據 Webhook 的 query 參數動態生成回應\nconst url = $node['取得GET參數'].json['url'];\nconst download_file_name = $node['判斷下載影片類型'].json['download_file_name'];\nconst online = $node['取得GET參數'].json['online'];\nconst ext = $node['取得GET參數'].json['format'];\nlet response;\n\nresponse = {\n  status: \"success\",\n  message: \"影片下載成功！\",\n  data: {\n    url,\n    online,\n    download_file_name: download_file_name + '.' + ext,\n  }\n};\n\nreturn [{ json: response }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        0
+      ],
+      "id": "93e2934b-f8cd-4847-8998-66b1c1db85ed",
+      "name": "返回下載影片"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 根據 Webhook 的 query 參數動態生成回應\nconst content = $node['4o-mini總結'].json['choices'][0].message.content;\nconst title = $node['取得GET參數'].json['title'];\nconst url = $node['取得GET參數'].json['url'];\nlet response;\n\nresponse = {\n  \"status\": \"success\",\n  \"message\": \"總結成功！\",\n  \"data\": {\n    \"content\": content,\n  }\n}\n\nreturn [{ json: response }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1220,
+        240
+      ],
+      "id": "8db92f28-aee6-4de8-bf4e-73949dbe144c",
+      "name": "返回總結"
+    },
+    {
+      "parameters": {
+        "command": "=# 線上則刪除\nif [ {{ $json.online }} = \"1\" ]; then\n  # 刪除1小時以前的檔案\n  find {{ $json.download_path }} -maxdepth 1 -type f -name \"*\" -mmin +60 -exec rm -f {} \\;\nfi"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        120,
+        0
+      ],
+      "id": "189ef458-e96b-4cb9-8671-2c77f32c9da3",
+      "name": "刪除1小時以前檔案"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "刪除音檔": {
+      "main": [
+        [
+          {
+            "node": "4o-mini總結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得GET參數": {
+      "main": [
+        [
+          {
+            "node": "刪除1小時以前檔案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "判斷下載影片類型": {
+      "main": [
+        [
+          {
+            "node": "下載影片or音檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載影片or音檔": {
+      "main": [
+        [
+          {
+            "node": "參數是否有帶上總結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "參數是否有帶上總結": {
+      "main": [
+        [
+          {
+            "node": "讀音檔",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "返回下載影片",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀音檔": {
+      "main": [
+        [
+          {
+            "node": "gpt-4o-mini-transcribe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "gpt-4o-mini-transcribe": {
+      "main": [
+        [
+          {
+            "node": "如果沒有失敗(太長會失敗)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "如果沒有失敗(太長會失敗)": {
+      "main": [
+        [
+          {
+            "node": "刪除音檔",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "重讀音檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "重讀音檔": {
+      "main": [
+        [
+          {
+            "node": "whisper-1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "whisper-1": {
+      "main": [
+        [
+          {
+            "node": "刪除音檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "4o-mini總結": {
+      "main": [
+        [
+          {
+            "node": "返回總結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "如果總結且無帶token": {
+      "main": [
+        [
+          {
+            "node": "返回錯誤",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "判斷下載影片類型",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "下載＆總結影片": {
+      "main": [
+        [
+          {
+            "node": "取得GET參數",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "刪除1小時以前檔案": {
+      "main": [
+        [
+          {
+            "node": "如果總結且無帶token",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4a39d982-2611-4b6b-8c63-a2bc6bd27c75",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5838cf392cb4a8451fada8b5db978b8be9bb392f6c1ccc58e25fc5a23b5d29ca"
+  },
+  "id": "FcwZbRYHLDszh7C6",
+  "tags": []
+}
