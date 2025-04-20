@@ -12,6 +12,7 @@
 - 預設配置 ffmpeg 用於影片處理
 - 自動設置時區為亞洲/台北
 - 持久化數據存儲
+- 可自定義下載路徑
 
 ## 系統需求
 
@@ -35,9 +36,22 @@ cd n8n-yt-dlp-docker-compose
 ```bash
 # 創建環境變數文件
 touch .env
+
+# 設置下載路徑（可選，預設為 /var/www/html/downloads）
+echo "DOWNLOAD_PATH=/your/custom/path" >> .env
 ```
 
-可以在 `.env` 文件中添加 n8n 所需的環境變數。
+您可以在 `.env` 文件中添加以下環境變數：
+
+| 環境變數 | 說明 | 預設值 |
+|---------|------|--------|
+| DOWNLOAD_PATH | 媒體文件下載路徑 | /var/www/html/downloads |
+| N8N_PORT | n8n 服務訪問端口 | 5678 |
+| N8N_BASIC_AUTH_ACTIVE | 是否啟用基本認證 | false |
+| N8N_BASIC_AUTH_USER | 基本認證用戶名 | - |
+| N8N_BASIC_AUTH_PASSWORD | 基本認證密碼 | - |
+
+更多 n8n 環境變數配置請參考 [n8n 官方文檔](https://docs.n8n.io/hosting/environment-variables/environment-variables/)。
 
 ### 3. 啟動服務
 
@@ -55,25 +69,32 @@ http://localhost:5678
 
 ## 目錄結構
 
-- `/var/www/html/downloads`: 下載的媒體文件存儲位置
-- `n8n_data`: n8n 數據持久化卷
+- `/var/www/html/downloads`（預設）或您在 `.env` 中設置的 `DOWNLOAD_PATH`：下載的媒體文件存儲位置
+- `n8n_data`：n8n 數據持久化卷
 
 ## 自定義配置
 
 ### 修改下載目錄
 
-如需更改下載目錄，請編輯 `docker-compose.yml` 文件中的卷映射：
+有兩種方式可以修改下載目錄：
 
-```yaml
-volumes:
-  - n8n_data:/home/node/.n8n
-  - /your/custom/path:/home/node/downloads
-  - ./entrypoint.sh:/entrypoint.sh
-```
+1. **使用環境變數（推薦）**：
+   在 `.env` 文件中設置 `DOWNLOAD_PATH` 變數：
+   ```
+   DOWNLOAD_PATH=/your/custom/path
+   ```
+
+2. **直接修改 docker-compose.yml**：
+   ```yaml
+   volumes:
+     - n8n_data:/home/node/.n8n
+     - /your/custom/path:/home/node/downloads
+     - ./entrypoint.sh:/entrypoint.sh
+   ```
 
 ### 修改端口
 
-如需更改 n8n 的訪問端口，請編輯 `docker-compose.yml` 文件中的端口映射：
+在 `.env` 文件中設置 `N8N_PORT` 變數，或直接修改 `docker-compose.yml` 文件中的端口映射：
 
 ```yaml
 ports:
@@ -135,6 +156,32 @@ curl "http://localhost:5678/webhook/download-video?url=https://www.youtube.com/w
 
 ```
 yt-dlp -o "/home/node/downloads/%(title)s.%(ext)s" [URL]
+```
+
+## 常見問題解決方法
+
+### 1. 下載失敗或格式問題
+
+如果遇到下載失敗或格式問題，可能是 yt-dlp 版本過舊。嘗試更新 yt-dlp：
+
+```bash
+docker exec -it n8n sh -c "curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp && chmod a+rx /usr/local/bin/yt-dlp"
+```
+
+### 2. 權限問題
+
+如果遇到檔案權限問題，請確保下載目錄具有正確的權限：
+
+```bash
+docker exec -it n8n sh -c "chown -R node:node /home/node/downloads"
+```
+
+### 3. 容器無法啟動
+
+檢查 Docker 日誌以獲取更多信息：
+
+```bash
+docker-compose logs n8n
 ```
 
 ## 維護與更新

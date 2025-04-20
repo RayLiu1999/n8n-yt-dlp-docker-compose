@@ -8,10 +8,10 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        780,
-        240
+        240,
+        400
       ],
-      "id": "5b0a8bce-3015-4e21-b44f-456d294a4148",
+      "id": "216f82a1-af29-4be9-b06e-19f1576b3fbd",
       "name": "刪除音檔"
     },
     {
@@ -56,22 +56,22 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 1,
       "position": [
-        -80,
-        0
+        -640,
+        160
       ],
-      "id": "6edcc8e8-4fa8-483b-b58f-223decbad288"
+      "id": "49277103-869f-4e8f-85bc-005ba4c56984"
     },
     {
       "parameters": {
-        "jsCode": "// 取得參數\nconst quality = $node['取得GET參數'].json['quality'];\nconst format = $node['取得GET參數'].json['format'];\nconst summarize = $node['取得GET參數'].json['summarize'];\nconst online = $node['取得GET參數'].json['online'];\n\n// 設置 yt-dlp 格式與檔名\nlet yt_dlp_format = '';\nlet mp3_format = ' -x --audio-format mp3';\nlet download_file_name  = '%(title)s';\nif (parseInt(online) === 1) {\n  download_file_name  = new Date().toISOString().replace(/[:.]/g, '');  \n}\n\n// 根據 quality 設置格式\nif (quality === 'highest') {\n  // 最高品質 - 不限制寬高\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]';\n  }\n} else if (quality === 'high') {\n  // 高品質 - 限制最大 1920x1080\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]ext=mp4]';\n  }\n} else if (quality === 'medium') {\n  // 中等品質 - 限制最大 720p\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]';\n  }\n} else if (quality === 'low') {\n  // 低品質 - 限制最大 360p\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]';\n  }\n} else {\n  // 預設為中等品質\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]';\n  }\n}\n\n// 設置 mp3 品質與檔名\nif (format === 'mp3' && parseInt(summarize) === 1) {\n  mp3_format += ' --audio-quality 9';\n  // 依照日期和時間命名\n  download_file_name = new Date().toISOString().replace(/[:.]/g, '') + '_mp3';\n}\n\n// 返回結果\nreturn [{\n  json: {\n    ...$node['取得GET參數'].json,\n    download_file_name,\n    yt_dlp_format,\n    yt_dlp_extra: format === 'mp3' ? mp3_format : ''\n  }\n}];"
+        "jsCode": "// 取得參數\nconst quality = $node['取得GET參數'].json['quality'];\nconst format = $node['取得GET參數'].json['format'];\nconst summarize = $node['取得GET參數'].json['summarize'];\nconst online = $node['取得GET參數'].json['online'];\nconst url = $node['取得GET參數'].json['url'];\n\n// 設置 yt-dlp 格式與檔名\nlet yt_dlp_format = '';\nlet mp3_format = ' -x --audio-format mp3';\nlet download_file_name  = '%(title)s';\nif (parseInt(online) === 1) {\n  download_file_name  = new Date().toISOString().replace(/[:.]/g, '');  \n}\n\n// 根據 quality 設置格式\nif (quality === 'highest') {\n  // 最高品質 - 不限制寬高\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]';\n  }\n} else if (quality === 'high') {\n  // 高品質 - 限制最大 1920x1080\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[height<=1080]ext=mp4]';\n  }\n} else if (quality === 'medium') {\n  // 中等品質 - 限制最大 720p\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]';\n  }\n} else if (quality === 'low') {\n  // 低品質 - 限制最大 360p\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=360][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=360][ext=mp4]+bestaudio[ext=m4a]/best[height<=360][ext=mp4]';\n  }\n} else {\n  // 預設為中等品質\n  if (format === 'mp3') {\n    yt_dlp_format = 'bestaudio/best';\n  } else {\n    yt_dlp_format = 'bestvideo[vcodec^=av01][height<=720][ext=mp4]+bestaudio[ext=m4a]/bestvideo[vcodec^=avc1][height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]';\n  }\n}\n\n// 設置 mp3 品質與檔名\nif (format === 'mp3' && parseInt(summarize) === 1) {\n  mp3_format += ' --audio-quality 9';\n  // 依照日期和時間命名\n  download_file_name = new Date().toISOString().replace(/[:.]/g, '') + '_mp3';\n}\n\n// 設置video id\n$node['取得GET參數'].json['video_id'] = url.match(/[?&]v=([^&]*)/)?.[1];\n\n// 返回結果\nreturn [{\n  json: {\n    ...$node['取得GET參數'].json,\n    download_file_name,\n    yt_dlp_format,\n    yt_dlp_extra: format === 'mp3' ? mp3_format : ''\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        560,
-        0
+        0,
+        160
       ],
-      "id": "47ad6a2b-46ba-479e-b8d1-6999174a2ce7",
+      "id": "4ae22325-c676-4ac5-80bb-defcee37184c",
       "name": "判斷下載影片類型"
     },
     {
@@ -82,10 +82,10 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        780,
-        0
+        220,
+        160
       ],
-      "id": "aa1df08f-11ca-4e33-b9f1-3469a5c08bf4",
+      "id": "9c400907-c7ec-480e-8a03-175a41eaa123",
       "notes": "-f \"bestvideo[ext=mp4][height<=720]+bestaudio[ext=m4a]/best[ext=mp4]\""
     },
     {
@@ -125,10 +125,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        1000,
-        0
+        440,
+        160
       ],
-      "id": "9ba5b7c6-eec1-403d-8ec0-9bb6fbf830bf",
+      "id": "ad181945-1ace-47e3-a189-771768607992",
       "name": "參數是否有帶上總結"
     },
     {
@@ -139,10 +139,10 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        -260,
-        260
+        -820,
+        420
       ],
-      "id": "9200f0a6-3b80-4021-8b69-6a2b39bfd2c7",
+      "id": "853d637a-be3c-4d88-a0ba-b9eb0a61ff1b",
       "name": "讀音檔"
     },
     {
@@ -178,10 +178,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -80,
-        260
+        -640,
+        420
       ],
-      "id": "e5cfb9dd-d3a7-46a7-be1b-163b86154a45",
+      "id": "bff43f94-eb5f-480b-8e53-e14648632c0b",
       "name": "gpt-4o-mini-transcribe",
       "alwaysOutputData": true,
       "retryOnFail": false,
@@ -214,10 +214,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        120,
-        260
+        -440,
+        420
       ],
-      "id": "35b06718-52a2-4a14-8ee1-c14f04f15335",
+      "id": "cd3c8550-5ee7-416b-8358-0c3f37ccf356",
       "name": "如果沒有失敗(太長會失敗)"
     },
     {
@@ -228,10 +228,10 @@
       "type": "n8n-nodes-base.readWriteFile",
       "typeVersion": 1,
       "position": [
-        340,
-        340
+        -280,
+        640
       ],
-      "id": "a902e5ec-6f8c-4dce-81c5-25469a2b6dca",
+      "id": "5957b7f7-29d7-4fee-bd8f-e2a0523f7b85",
       "name": "重讀音檔"
     },
     {
@@ -267,10 +267,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        560,
-        340
+        -120,
+        640
       ],
-      "id": "9f9ae06a-3b12-410c-8420-2c6a2d846e68",
+      "id": "20f94e4a-9692-4f62-a1b4-f19cbbe12d2a",
       "name": "whisper-1",
       "alwaysOutputData": true,
       "retryOnFail": false
@@ -296,10 +296,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1000,
-        240
+        440,
+        400
       ],
-      "id": "87a262f7-63e2-4f23-8fc6-4738e5f53704",
+      "id": "7264fb46-532a-403d-a48d-69a6da2bb4f3",
       "name": "4o-mini總結",
       "alwaysOutputData": true,
       "retryOnFail": false
@@ -311,10 +311,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        560,
-        -160
+        0,
+        0
       ],
-      "id": "45d595ef-58d3-42a5-b264-7a0b95df95a0",
+      "id": "20fd238b-7b67-4908-abe6-9805824de8d3",
       "name": "返回錯誤"
     },
     {
@@ -354,10 +354,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        340,
-        0
+        -220,
+        160
       ],
-      "id": "47d926f0-5b8d-48d4-bc44-e33a17be8c93",
+      "id": "caa92c8d-d08e-4f53-baac-a26de00084d0",
       "name": "如果總結且無帶token"
     },
     {
@@ -371,15 +371,15 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [
-        -260,
-        0
+        -820,
+        160
       ],
-      "id": "6e8e18e7-39d2-4f1b-ac97-11b0166937ad",
+      "id": "1fcdaddc-f7a6-4a42-a8fb-106793c0d226",
       "webhookId": "dc15093e-6778-4f3a-bc73-75a0c0691596",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "1iVAJezcKNcqxhVK",
-          "name": "Bearer token"
+          "id": "whdeP2Z5BXGhSFJj",
+          "name": "Header Auth account"
         }
       }
     },
@@ -390,23 +390,23 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1220,
-        0
+        660,
+        160
       ],
-      "id": "93e2934b-f8cd-4847-8998-66b1c1db85ed",
+      "id": "1d26a08f-b1f6-4ef2-855a-1fd326b9c44e",
       "name": "返回下載影片"
     },
     {
       "parameters": {
-        "jsCode": "// 根據 Webhook 的 query 參數動態生成回應\nconst content = $node['4o-mini總結'].json['choices'][0].message.content;\nconst title = $node['取得GET參數'].json['title'];\nconst url = $node['取得GET參數'].json['url'];\nlet response;\n\nresponse = {\n  \"status\": \"success\",\n  \"message\": \"總結成功！\",\n  \"data\": {\n    \"content\": content,\n  }\n}\n\nreturn [{ json: response }];"
+        "jsCode": "// 根據 Webhook 的 query 參數動態生成回應\nconst content = $node['4o-mini總結'].json['choices'][0].message.content;\nconst title = $node['取得GET參數'].json['query']['title'];\nconst url = $node['取得GET參數'].json['query']['url'];\nlet response;\n\nresponse = {\n  \"status\": \"success\",\n  \"message\": \"總結成功！\",\n  \"data\": {\n    \"content\": content,\n    \"generated_time\": Date.now()\n  }\n}\n\nreturn [{ json: response }];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1220,
-        240
+        880,
+        400
       ],
-      "id": "8db92f28-aee6-4de8-bf4e-73949dbe144c",
+      "id": "fb2aeb41-c755-4009-8bb5-4f5e3019ef80",
       "name": "返回總結"
     },
     {
@@ -416,11 +416,110 @@
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
       "position": [
-        120,
-        0
+        -440,
+        160
       ],
-      "id": "189ef458-e96b-4cb9-8671-2c77f32c9da3",
+      "id": "c6d632e7-bce9-4750-9145-cb5a36a4f6fb",
       "name": "刪除1小時以前檔案"
+    },
+    {
+      "parameters": {
+        "command": "=#!/bin/bash\n\n# 定義要寫入的文字\ntext=\"{{ $('4o-mini總結').item.json.choices[0].message.content }}\"\nfilename=\"{{ $('取得GET參數').item.json.query.title }}\"\npath=\"/home/node/downloads/Youtube影片總結文字/\"\nvideo_id=\"{{ $('判斷下載影片類型').item.json.video_id }}\"\next=\"md\"\n\n# 將 / 替換為 _，並移除其他可能導致問題的字符\nclean_filename=$(echo \"$filename\" | sed 's/\\//_/g; s/[?:*]//g')\n\n# 確保目錄存在，若不存在則建立\nmkdir -p \"$path\"\n\n# 將文字追加到檔案\necho \"$text\" >> \"${path}${clean_filename}_${video_id}.${ext}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        660,
+        400
+      ],
+      "id": "599172ab-8887-4cda-91db-10d8f044d7a7",
+      "name": "產生總結檔案"
+    },
+    {
+      "parameters": {
+        "command": "=#!/bin/bash\n\n# 定義要寫入的文字\ntext=\"{{ $('gpt-4o-mini-transcribe').item.json.text ?? $('whisper-1').item.json.text }}\"\nfilename=\"{{ $('取得GET參數').item.json.query.title }}\"\npath=\"/home/node/downloads/Youtube影片逐字稿/\"\nvideo_id=\"{{ $('判斷下載影片類型').item.json.video_id }}\"\next=\"md\"\n\n# 將 / 替換為 _，並移除其他可能導致問題的字符\nclean_filename=$(echo \"$filename\" | sed 's/\\//_/g; s/[?:*]//g')\n\n# 確保目錄存在，若不存在則建立\nmkdir -p \"$path\"\n\n# 將文字追加到檔案\necho \"$text\" >> \"${path}${clean_filename}_${video_id}.${ext}\""
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        60,
+        400
+      ],
+      "id": "7c6cb052-4fd4-4313-9f4e-d1b22b8d9d34",
+      "name": "產生逐字稿檔案"
+    },
+    {
+      "parameters": {
+        "path": "summary-content",
+        "authentication": "headerAuth",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "取得已下載總結文字",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        880
+      ],
+      "id": "6c7b067f-3897-4b0e-aef6-30d62704f15e",
+      "webhookId": "dc15093e-6778-4f3a-bc73-75a0c0691596",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "whdeP2Z5BXGhSFJj",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "viedo_id",
+              "value": "={{ $json.query.viedo_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "name": "取得GET參數-summary",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [
+        -600,
+        880
+      ],
+      "id": "18b6d98c-a737-4fa1-af84-61b183de414b"
+    },
+    {
+      "parameters": {
+        "jsCode": "const fileData = JSON.parse($input.first().json.stdout);\nconst error = $input.first().json.error;\nlet response;\n\nif (!error) {\n  response = {\n    \"status\": \"success\",\n    \"message\": \"取得總結成功！\",\n    \"data\": {\n      \"content\": fileData.content,\n      \"generated_time\": fileData.modified_time\n    }\n  }\n}\nelse {\n  response = {\n    \"status\": \"error\",\n    \"message\": \"取得總結失敗\",\n  }\n}\n\n\nreturn [{ json: response }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        880
+      ],
+      "id": "647e3ae0-00f4-43f7-b6fb-99dd83926d04",
+      "name": "返回總結1"
+    },
+    {
+      "parameters": {
+        "executeOnce": "={{ true }}",
+        "command": "=# 定義變數\nvideo_id=\"{{ $json.query.video_id }}\"\npath=\"/home/node/downloads/Youtube影片總結文字/\"\next=\"md\"\n\n# 尋找匹配 video_id 的檔案\nfilename=$(ls \"${path}\"*\"${video_id}.${ext}\" 2>/dev/null)\n\n# 檢查是否找到檔案\nif [ -z \"$filename\" ]; then\n    echo \"{\\\"error\\\": \\\"找不到匹配 ${video_id} 的檔案\\\"}\"\n    exit 1\nfi\n\n# 獲取檔案內容\ncontent=$(cat \"$filename\")\n# 獲取檔案最後修改時間戳 (Unix Timestamp，單位為秒)\nmtime=$(($(stat -c %Y \"$filename\") * 1000))\n\n# 檢查是否成功讀取內容\nif [ $? -eq 0 ]; then\n    # 使用 JSON 格式輸出內容和時間戳\n    echo \"{\\\"content\\\": $(echo \"$content\" | jq -R -s '.'), \\\"modified_time\\\": $mtime}\"\nelse\n    echo \"{\\\"error\\\": \\\"無法讀取 $filename\\\"}\"\n    exit 1\nfi"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        880
+      ],
+      "id": "d783004c-6eb2-46bd-83ce-213bab1f79a9",
+      "name": "讀取總結檔案",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
     }
   ],
   "pinData": {},
@@ -513,7 +612,7 @@
       "main": [
         [
           {
-            "node": "刪除音檔",
+            "node": "產生逐字稿檔案",
             "type": "main",
             "index": 0
           }
@@ -542,7 +641,7 @@
       "main": [
         [
           {
-            "node": "刪除音檔",
+            "node": "產生逐字稿檔案",
             "type": "main",
             "index": 0
           }
@@ -553,7 +652,7 @@
       "main": [
         [
           {
-            "node": "返回總結",
+            "node": "產生總結檔案",
             "type": "main",
             "index": 0
           }
@@ -599,17 +698,72 @@
           }
         ]
       ]
+    },
+    "產生總結檔案": {
+      "main": [
+        [
+          {
+            "node": "返回總結",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "產生逐字稿檔案": {
+      "main": [
+        [
+          {
+            "node": "刪除音檔",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得已下載總結文字": {
+      "main": [
+        [
+          {
+            "node": "取得GET參數-summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "取得GET參數-summary": {
+      "main": [
+        [
+          {
+            "node": "讀取總結檔案",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "讀取總結檔案": {
+      "main": [
+        [
+          {
+            "node": "返回總結1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "4a39d982-2611-4b6b-8c63-a2bc6bd27c75",
+  "versionId": "a21b67a5-cb33-4a15-81be-3d42048e2154",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "5838cf392cb4a8451fada8b5db978b8be9bb392f6c1ccc58e25fc5a23b5d29ca"
   },
-  "id": "FcwZbRYHLDszh7C6",
+  "id": "mQy6mzpSM4vSZNkl",
   "tags": []
 }

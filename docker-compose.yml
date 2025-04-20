@@ -10,7 +10,7 @@ services:
       - TZ=Asia/Taipei
     volumes:
       - n8n_data:/home/node/.n8n
-      - /var/www/html/downloads:/home/node/downloads
+      - ${DOWNLOAD_PATH:-/var/www/html/downloads}:/home/node/downloads
       - ./entrypoint.sh:/entrypoint.sh
     restart: unless-stopped
     env_file:
@@ -20,3 +20,4 @@ services:
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
 volumes:
   n8n_data:
+    name: n8n_data

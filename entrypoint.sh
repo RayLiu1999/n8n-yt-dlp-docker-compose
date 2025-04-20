@@ -1,7 +1,11 @@
 #!/bin/sh
 
 # 安裝必要的軟件包
-apk add --no-cache ffmpeg curl python3 py3-pip
+apk update
+apk add --no-cache ffmpeg curl python3 py3-pip || apk add --no-cache ffmpeg curl python3 python3-pip
+
+# 創建下載目錄（如果不存在）
+mkdir -p /home/node/downloads
 
 # 下載 yt-dlp 並設置執行權限
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o /usr/local/bin/yt-dlp
