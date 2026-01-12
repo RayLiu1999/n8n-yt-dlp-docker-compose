@@ -17,5 +17,5 @@ ln -sf /usr/bin/python3 /usr/local/bin/python
 # 設置權限，讓 node 用戶有權限存取下載目錄
 chown -R node:node /home/node/downloads
 
-# 切換到 node 用戶並啟動 n8n
-su node -c 'n8n start'
+# 正確的啟動方式：使用 exec 切換用戶並接管進程
+exec su-exec node n8n start
