@@ -1,19 +1,19 @@
 services:
   n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: n8n
     ports:
       - "5678:5678"
     environment:
       - TZ=Asia/Taipei
+      - NODES_EXCLUDE=[]
     volumes:
       - n8n_data:/home/node/.n8n
       - ${DOWNLOAD_PATH:-/var/www/html/downloads}:/home/node/downloads
-      - ./entrypoint.sh:/entrypoint.sh
     restart: unless-stopped
-    # 安裝 yt-dlp
-    user: root
-    entrypoint: ["/bin/sh", "-c", "sh /entrypoint.sh"]
+
 volumes:
   n8n_data:
     name: n8n_data
