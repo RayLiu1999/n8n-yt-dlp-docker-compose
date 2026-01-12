@@ -13,8 +13,6 @@ services:
       - ${DOWNLOAD_PATH:-/var/www/html/downloads}:/home/node/downloads
       - ./entrypoint.sh:/entrypoint.sh
     restart: unless-stopped
-    env_file:
-      - .env
     # 安裝 yt-dlp
     user: root
     entrypoint: ["/bin/sh", "/entrypoint.sh"]
